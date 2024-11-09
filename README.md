@@ -1,83 +1,83 @@
 # Docker ARM64 Linux Desktop via Browser
 
-Questo progetto fornisce un ambiente Linux leggero, basato su Ubuntu ARM64, accessibile via browser tramite noVNC. Utilizza XFCE come ambiente desktop e `supervisord` per gestire i servizi. Questo progetto è particolarmente utile per avere un desktop Linux virtualizzato, accessibile da qualsiasi dispositivo, senza dover installare client VNC.
+This project provides a lightweight Linux environment, based on Ubuntu ARM64, accessible via browser using noVNC. It uses XFCE as the desktop environment and `supervisord` to manage services. This project is particularly useful for having a virtualized Linux desktop accessible from any device without needing to install a VNC client.
 
-## Struttura del Progetto
-Il progetto contiene due file principali:
+## Project Structure
+The project contains two main files:
 
-- **Dockerfile**: Definisce come costruire l'immagine Docker, installare i pacchetti necessari, configurare l'ambiente desktop XFCE e noVNC.
-- **supervisord.conf**: Utilizzato per gestire l'avvio e il controllo di diversi processi, inclusi `Xvfb`, `x11vnc`, `noVNC` e `startxfce4`.
+- **Dockerfile**: Defines how to build the Docker image, install the necessary packages, and configure the XFCE desktop environment and noVNC.
+- **supervisord.conf**: Used to manage the startup and control of various processes, including `Xvfb`, `x11vnc`, `noVNC`, and `startxfce4`.
 
-## Contenuto dei File
+## File Contents
 
 ### Dockerfile
-Il Dockerfile è la base per la creazione dell'immagine Docker. Esso:
+The Dockerfile is the basis for creating the Docker image. It:
 
-1. **Base Image**: Utilizza `arm64v8/ubuntu:20.04` come immagine base.
-2. **Pacchetti di Base**: Installa `xfce4`, `x11vnc`, `xvfb`, `supervisor`, `noVNC`, e vari strumenti necessari.
-3. **Configurazione Localizzazione**: Configura la localizzazione in italiano (`language-pack-it`), così da rendere l'interfaccia utente in italiano.
-4. **Utente Sicuro**: Crea un utente non root per motivi di sicurezza.
-5. **Supervisord**: Copia il file di configurazione di `supervisord` per gestire il lancio dei processi principali (XFCE, VNC, noVNC).
-6. **Esposizione delle Porte**: La porta `8081` è esposta per consentire l'accesso a noVNC tramite il browser.
+1. **Base Image**: Uses `arm64v8/ubuntu:20.04` as the base image.
+2. **Base Packages**: Installs `xfce4`, `x11vnc`, `xvfb`, `supervisor`, `noVNC`, and various necessary tools.
+3. **Localization Configuration**: Configures localization in Italian (`language-pack-it`) to make the user interface in Italian.
+4. **Secure User**: Creates a non-root user for security purposes.
+5. **Supervisord**: Copies the `supervisord` configuration file to manage the startup of the main processes (XFCE, VNC, noVNC).
+6. **Port Exposure**: Exposes port `8081` to allow access to noVNC via the browser.
 
 ### supervisord.conf
-Il file `supervisord.conf` è utilizzato per gestire l'avvio dei servizi necessari all'interno del container:
+The `supervisord.conf` file is used to manage the startup of the necessary services within the container:
 
-1. **Xvfb**: Avvia un framebuffer virtuale sul display `:99`. Questo crea un ambiente grafico virtuale necessario per il desktop XFCE.
-2. **x11vnc**: Si collega al display `:99` per fornire accesso VNC.
-3. **XFCE**: Avvia l'ambiente desktop leggero XFCE, rendendo disponibile un'interfaccia grafica accessibile.
-4. **noVNC**: Configura noVNC per fornire l'accesso al server VNC attraverso un'interfaccia web sulla porta `8081`.
+1. **Xvfb**: Starts a virtual framebuffer on display `:99`. This creates the virtual graphical environment required for the XFCE desktop.
+2. **x11vnc**: Connects to display `:99` to provide VNC access.
+3. **XFCE**: Starts the lightweight XFCE desktop environment, making an accessible graphical interface available.
+4. **noVNC**: Configures noVNC to provide access to the VNC server through a web interface on port `8081`.
 
-## Come Utilizzare il Progetto
+## How to Use the Project
 
-### Prerequisiti
-- **Docker**: Assicurati di avere Docker installato e configurato per supportare l'architettura ARM64.
+### Prerequisites
+- **Docker**: Ensure you have Docker installed and configured to support the ARM64 architecture.
 
-### Costruire l'Immagine
-Per costruire l'immagine Docker, utilizza il seguente comando nella directory del progetto, che contiene il Dockerfile e `supervisord.conf`:
+### Build the Image
+To build the Docker image, use the following command in the project directory, which contains the Dockerfile and `supervisord.conf`:
 
 ```sh
 docker build -t linux-novnc-arm64 .
 ```
 
-### Eseguire il Container
-Per eseguire il container, utilizza il comando seguente. Questo renderà il desktop Linux accessibile tramite il browser sulla porta `8081`.
+### Run the Container
+To run the container, use the following command. This will make the Linux desktop accessible via the browser on port `8081`.
 
 ```sh
 docker run -d -p 8081:8081 --name linux-container linux-novnc-arm64
 ```
 
-### Accesso al Desktop Linux
-Apri il browser e vai all'indirizzo:
+### Access the Linux Desktop
+Open your browser and go to:
 
 ```
 http://localhost:8081
 ```
 
-Qui troverai un desktop XFCE, accessibile via noVNC. L'interfaccia sarà in italiano grazie alla configurazione effettuata nel Dockerfile.
+Here you will find an XFCE desktop, accessible via noVNC. The interface will be in Italian thanks to the configuration made in the Dockerfile.
 
-### Credenziali
-Le credenziali predefinite per l'utente creato nel container sono:
+### Credentials
+The default credentials for the user created in the container are:
 
 - **Username**: `linuxuser`
 - **Password**: `password`
 
-Per maggiore sicurezza, ti consiglio di cambiare la password una volta effettuato l'accesso.
+For better security, it is recommended to change the password once logged in.
 
-## Risoluzione dei Problemi
-- **Schermo Nero**: Se vedi uno schermo nero quando ti colleghi tramite noVNC, assicurati che tutti i servizi (in particolare `xvfb` e `startxfce4`) siano attivi. Questo può essere verificato visualizzando i log di supervisord:
+## Troubleshooting
+- **Black Screen**: If you see a black screen when connecting via noVNC, make sure all services (particularly `xvfb` and `startxfce4`) are running. This can be verified by viewing the supervisord logs:
   ```sh
   docker logs linux-container
   ```
 
-- **Lingua non Correttamente Configurata**: Se la lingua non appare in italiano, assicurati che i pacchetti di localizzazione siano stati correttamente installati e che le variabili d'ambiente siano impostate come indicato nel Dockerfile.
+- **Incorrect Language Configuration**: If the language does not appear in Italian, ensure that the localization packages have been properly installed and that the environment variables are set as indicated in the Dockerfile.
 
-## Contributi
-Sentiti libero di contribuire a questo progetto attraverso pull request o aprendo un issue se riscontri problemi o hai suggerimenti per miglioramenti.
+## Contributions
+Feel free to contribute to this project through pull requests or by opening an issue if you encounter problems or have suggestions for improvements.
 
-## Licenza
-Questo progetto è distribuito sotto la licenza MIT. Sentiti libero di utilizzarlo e modificarlo.
+## License
+This project is distributed under the MIT license. Feel free to use and modify it.
 
 ---
-Grazie per aver esplorato questo progetto! Se hai domande o suggerimenti, non esitare a contattarmi.
+Thank you for exploring this project! If you have any questions or suggestions, do not hesitate to contact me.
 
