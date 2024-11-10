@@ -16,18 +16,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     sudo \
     dbus-x11 \
-    language-pack-it \
-    locales \
     && apt-get clean
-
-# Imposta la lingua italiana come default
-RUN locale-gen it_IT.UTF-8 && \
-    update-locale LANG=it_IT.UTF-8
-
-# Setta la variabile d'ambiente per la lingua
-ENV LANG=it_IT.UTF-8
-ENV LANGUAGE=it_IT:it
-ENV LC_ALL=it_IT.UTF-8
 
 # Installazione di noVNC
 RUN mkdir -p /opt/novnc/utils/websockify \
@@ -35,7 +24,12 @@ RUN mkdir -p /opt/novnc/utils/websockify \
     && wget -qO- https://github.com/novnc/websockify/archive/refs/tags/v0.10.0.tar.gz | tar xz --strip 1 -C /opt/novnc/utils/websockify
 
 # Creare l'utente non root per la sicurezza
-RUN useradd -m -s /bin/bash linuxuser && echo 'linuxuser:password' | chpasswd && adduser linuxuser sudo
+RUN useradd -m -s /bin/bash user_vnc && echo 'user_vnc:1P@zzvv0rd' | chpasswd && adduser user_vnc sudo
+
+# Creare una password per VNC
+RUN mkdir /home/user_vnc/.vnc && \
+    x11vnc -storepasswd 1P@zzvv0rd /home/user_vnc/.vnc/passwd && \
+    chown -R user_vnc:user_vnc /home/user_vnc/.vnc
 
 # Configurazione di supervisord per l'avvio di xvfb, x11vnc, noVNC e xfce4
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
